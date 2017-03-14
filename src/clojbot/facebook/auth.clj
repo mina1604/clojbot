@@ -4,7 +4,6 @@
             [taoensso.timbre :as timbre]))
 
 (def ^:private verify-token (env :verify-token))
-(def ^:private page-secret (env :page-secret))
 
 (defn authenticate [request]
   (timbre/debug "Authenticating incoming webhook verification request" request)

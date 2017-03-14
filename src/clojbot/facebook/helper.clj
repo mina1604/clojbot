@@ -5,6 +5,18 @@
   {:attachment {:type "image"
                 :payload {:url image-url}}})
 
+(defn video-message [video-url]
+  {:attachment {:type "video"
+                :payload {:url video-url}}})
+
+(defn audio-message [audio-url]
+  {:attachment {:type "audio"
+                :payload {:url audio-url}}})
+
+(defn file-message [file-url]
+  {:attachment {:type "file"
+                :payload {:url file-url}}})
+
 (defn text-message [text]
   {:text text})
 

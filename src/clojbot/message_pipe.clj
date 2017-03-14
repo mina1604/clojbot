@@ -1,4 +1,9 @@
 (ns clojbot.message-pipe
+  "processes incoming information/messages via multiple stages
+    understand: tries to understand input (extracts meaning out of text, attachments)
+    enrich: tries to enrich information (mapping intent to reaction, processing attachments)
+    decide: decides if sufficient information exists to generate replies (nlp confidence, attachment data)
+    reply: sends out replies"
   (:gen-class)
   (:require [clojure.string :as str]
             [taoensso.timbre :as timbre]
@@ -6,35 +11,40 @@
             [clojbot.facebook.api :as fb-api]))
 
 (def intent->reaction {:get-started reactions/greet
-                       :get-help reactions/help
-                       :foo reactions/fallback})
+                       :get-help    reactions/help
+                       :foo         reactions/fallback})
 
 (defn- apply-rules [information]
-  (assoc information
-         :intent
-         (cond
-           (re-matches #"hi|hello|hallo|" (:text information)) :get-started
-           (re-matches #"help" (:text information)) :get-help
-           :else :foo)))
+  (if-let [text (:text information)]
+    (assoc information
+           :intent
+           (cond
+             (re-matches #"hi|hello|hallo|" text) :get-started
+             (re-matches #"help" text)            :get-help
+             :else                                :foo))
+    information))
+
+(defn- map-intent [information]
+  (if-let [intent (:intent information)]
+    (assoc information
+           :reaction
+           (intent intent->reaction))
+    information))
+
+(defn- generate-replies [information]
+  (if-let [reaction (:reaction information)]
+    (assoc information
+           :replies
+           (reaction))
+    information))
 
 (defn understand [information]
   (timbre/debug "understanding" information)
   (-> (apply-rules information)))
 
-(defn- map-intent [information]
-  (assoc information
-         :reaction
-         ((:intent information) intent->reaction)))
-
 (defn enrich [information]
   (timbre/debug "enriching" information)
   (-> (map-intent information)))
-
-
-(defn- generate-replies [information]
-  (assoc information
-         :replies
-         ((:reaction information))))
 
 (defn decide [information]
   (timbre/debug "deciding" information)

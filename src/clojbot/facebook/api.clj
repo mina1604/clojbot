@@ -6,8 +6,8 @@
             [org.httpkit.client :as http]
             [taoensso.timbre :as timbre]))
 
-(def ^:private api-version "v2.6")
 (def ^:private api-url "https://graph.facebook.com/")
+(def ^:private api-version "v2.6")
 
 (def ^:private page-access-token (env :page-access-token))
 
@@ -26,7 +26,6 @@
                               :body (json/write-str body)
                               :insecure? true})]
     (handle-facebook-response response)))
-
 
 (defn send-message
   "sends Message to PSID via FB Send Api, see:
@@ -64,8 +63,8 @@
    https://developers.facebook.com/docs/messenger-platform/user-profile"
   [psid]
   (let [response @(http/get (str api-url api-version "/" psid)
-                           {:query-params {:access_token page-access-token
-                                           :fields "first_name,last_name,profile_pic,locale,timezone,gender"}
+                            {:query-params {:access_token page-access-token
+                                            :fields "first_name,last_name,profile_pic,locale,timezone,gender"}}
                             :headers {"Content-Type" "application/json"}
-                            :insecure? true})]
+                            :insecure? true)]
     (handle-facebook-response response)))
